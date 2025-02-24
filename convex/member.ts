@@ -8,7 +8,7 @@ export const addMembers = mutation({
   },
   handler: async (ctx, args) => {
     for (const mem of args.members) {
-      // @ts-expect-error: Type issue with Convex API auto-generation, but this works at runtime.
+     
       const memberAlreadyExist = await ctx.runQuery(api.member.existingMember, { checkId: mem });
 
       if (!memberAlreadyExist) {
