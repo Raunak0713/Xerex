@@ -8,7 +8,7 @@ export const addMembers = mutation({
   },
   handler: async (ctx, args) => {
     for (const mem of args.members) {
-      //@ts-ignore
+      // @ts-expect-error
       const memberAlreadyExist = await ctx.runQuery(api.member.existingMember, { checkId: mem });
 
       if (!memberAlreadyExist) {

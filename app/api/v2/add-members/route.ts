@@ -11,7 +11,7 @@ export async function POST(req: NextRequest) {
     if (!Array.isArray(members) || members.length === 0) {
       return NextResponse.json({ error: "Invalid members array" }, { status: 400 });
     }
-    // @ts-ignore
+    // @ts-expect-error
     await convex.mutation(api.member.addMembers, { members });
 
     return NextResponse.json({ message: "Members added successfully!" }, { status: 200 });
