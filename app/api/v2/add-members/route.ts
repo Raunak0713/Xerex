@@ -11,7 +11,7 @@ export async function POST(req: NextRequest) {
     if (!Array.isArray(members) || members.length === 0) {
       return NextResponse.json({ error: "Invalid members array" }, { status: 400 });
     }
-    // @ts-expect-error
+    // @ts-expect-error: Type issue with Convex API auto-generation, but this works at runtime.
     await convex.mutation(api.member.addMembers, { members });
 
     return NextResponse.json({ message: "Members added successfully!" }, { status: 200 });
