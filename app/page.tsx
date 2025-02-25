@@ -5,7 +5,8 @@ import { NotificationFeed, Xerex } from "xerexjs"
 export default function Home() {
   const xerex = new Xerex("123")
   const handleAddMembers = async () => {
-    await xerex.addMembers(["1","2","3","4"])
+    const users = ["Raunak","Swanand","Anish","Dhairya"]
+    await xerex.addMembers(users)
   }
   return (
     <div className='flex justify-end p-3 mr-24'>
