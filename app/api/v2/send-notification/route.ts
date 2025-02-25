@@ -1,8 +1,15 @@
 import { NextRequest, NextResponse } from "next/server";
 
+interface NotificationPayload {
+  recipients: string[];
+  content: string;
+  buttonText?: string;
+  buttonUrl?: string;
+}
+
 export async function POST(req: NextRequest) {
   try {
-    const { recipients, content, buttonText, buttonUrl } = await req.json();
+    const { recipients, content, buttonText, buttonUrl }: NotificationPayload = await req.json();
 
     if (!recipients || !Array.isArray(recipients) || recipients.length === 0) {
       return NextResponse.json({ error: "Invalid recipients array" }, { status: 400 });
@@ -12,10 +19,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Content is required and must be a string" }, { status: 400 });
     }
 
-    const notificationData: any = {
-      recipients,
-      content,
-    };
+    const notificationData: NotificationPayload = { recipients, content };
 
     if (buttonText) notificationData.buttonText = buttonText;
     if (buttonUrl) notificationData.buttonUrl = buttonUrl;
