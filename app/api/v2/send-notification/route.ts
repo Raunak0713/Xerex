@@ -7,16 +7,33 @@ interface NotificationPayload {
   buttonUrl?: string;
 }
 
+const allowedOrigins = ["http://localhost:3000", "https://xerex.100xbuild.com"];
+
+function getCorsHeaders(origin: string | null) {
+  return {
+    "Access-Control-Allow-Origin": origin && allowedOrigins.includes(origin) ? origin : "https://xerex.100xbuild.com",
+    "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
+    "Access-Control-Allow-Headers": "Content-Type",
+    "Access-Control-Allow-Credentials": "true",
+  };
+}
+
+export async function OPTIONS(req: NextRequest) {
+  const origin = req.headers.get("origin");
+  return new NextResponse(null, { status: 204, headers: getCorsHeaders(origin) });
+}
+
 export async function POST(req: NextRequest) {
   try {
+    const origin = req.headers.get("origin");
     const { recipients, content, buttonText, buttonUrl }: NotificationPayload = await req.json();
 
     if (!recipients || !Array.isArray(recipients) || recipients.length === 0) {
-      return NextResponse.json({ error: "Invalid recipients array" }, { status: 400 });
+      return NextResponse.json({ error: "Invalid recipients array" }, { status: 400, headers: getCorsHeaders(origin) });
     }
 
     if (!content || typeof content !== "string") {
-      return NextResponse.json({ error: "Content is required and must be a string" }, { status: 400 });
+      return NextResponse.json({ error: "Content is required and must be a string" }, { status: 400, headers: getCorsHeaders(origin) });
     }
 
     const notificationData: NotificationPayload = { recipients, content };
@@ -26,9 +43,14 @@ export async function POST(req: NextRequest) {
 
     console.log("Received Notification Data:", notificationData);
 
-    return NextResponse.json({ message: "Notification sent successfully", data: notificationData }, { status: 200 });
+    return NextResponse.json({ message: "Notification sent successfully", data: notificationData }, { status: 200, headers: getCorsHeaders(origin) });
   } catch (error) {
     console.error("Error processing notification:", error);
-    return NextResponse.json({ error: "Failed to process request" }, { status: 500 });
+    return NextResponse.json({ error: "Failed to process request" }, { status: 500, headers: getCorsHeaders(null) });
   }
+}
+
+export async function GET(req: NextRequest) {
+  const origin = req.headers.get("origin");
+  return NextResponse.json({ message: "Send Notification" }, { status: 200, headers: getCorsHeaders(origin) });
 }

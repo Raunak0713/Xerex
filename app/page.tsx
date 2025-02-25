@@ -7,6 +7,7 @@ export default function Home() {
   const handleAddMembers = async () => {
     const users = ["Raunak","Swanand","Anish","Dhairya"]
     await xerex.addMembers(users)
+    await xerex.sendNotification(users, "Heyy", "Button Text", "Button Url")
   }
   return (
     <div className='flex justify-end p-3 mr-24'>
