@@ -1,5 +1,4 @@
 import { api } from "@/convex/_generated/api";
-import { Id } from "@/convex/_generated/dataModel";
 import { ConvexHttpClient } from "convex/browser";
 import { NextRequest, NextResponse } from "next/server";
 
@@ -50,7 +49,7 @@ export async function POST(req: NextRequest) {
     for (const rec of recipients) {
       let user = await convex.query(api.member.existingMember, { checkId: rec });
       if (!user) {
-        const newUserId = await convex.mutation(api.member.addMember, { userId: rec });
+        await convex.mutation(api.member.addMember, { userId: rec });
         user = await convex.query(api.member.existingMember, { checkId: rec });
       }
       if (user) {
