@@ -1,4 +1,5 @@
 import { api } from "@/convex/_generated/api";
+import { Id } from "@/convex/_generated/dataModel";
 import { ConvexHttpClient } from "convex/browser";
 import { NextRequest, NextResponse } from "next/server";
 
@@ -8,6 +9,7 @@ interface NotificationPayload {
   buttonText?: string;
   buttonUrl?: string;
 }
+
 const convex = new ConvexHttpClient(process.env.NEXT_PUBLIC_CONVEX_URL!);
 
 const allowedOrigins = ["http://localhost:3000", "https://xerex.100xbuild.com"];
@@ -31,35 +33,42 @@ export async function POST(req: NextRequest) {
     const origin = req.headers.get("origin");
     const { recipients, content, buttonText, buttonUrl }: NotificationPayload = await req.json();
 
+    // Validation
     if (!recipients || !Array.isArray(recipients) || recipients.length === 0) {
       return NextResponse.json({ error: "Invalid recipients array" }, { status: 400, headers: getCorsHeaders(origin) });
     }
-
     if (!content || typeof content !== "string") {
       return NextResponse.json({ error: "Content is required and must be a string" }, { status: 400, headers: getCorsHeaders(origin) });
     }
 
-    const notificationData: NotificationPayload = { recipients, content };
+    const ourIds: Id<"members">[] = [];
 
-    if (buttonText) notificationData.buttonText = buttonText;
-    if (buttonUrl) notificationData.buttonUrl = buttonUrl;
-
-    const ourIds = [];
-
+    // Convert developerUserId to Convex member IDs
     for (const rec of recipients) {
       let user = await convex.query(api.member.existingMember, { checkId: rec });
+
       if (!user) {
         await convex.mutation(api.member.addMember, { userId: rec });
         user = await convex.query(api.member.existingMember, { checkId: rec });
       }
+
       if (user) {
         ourIds.push(user._id);
       }
     }
 
-    console.log(ourIds)
+    // Create notification with member IDs
+    const notificationId = await convex.mutation(api.notification.createNotification, {
+      content,
+      buttonText: buttonText || "",
+      buttonUrl: buttonUrl || "",
+      recipients: ourIds, // Sending Convex member IDs
+    });
 
-    return NextResponse.json({ message: "Notification sent successfully", data: notificationData }, { status: 200, headers: getCorsHeaders(origin) });
+    return NextResponse.json(
+      { message: "Notification created successfully", notificationId },
+      { status: 200, headers: getCorsHeaders(origin) }
+    );
   } catch (error) {
     console.error("Error processing notification:", error);
     return NextResponse.json({ error: "Failed to process request" }, { status: 500, headers: getCorsHeaders(null) });
