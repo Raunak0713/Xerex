@@ -53,7 +53,7 @@ export async function POST(req: NextRequest) {
         user = await convex.query(api.member.existingMember, { checkId: rec });
       }
       if (user) {
-        ourIds.push(user.developerUserId);
+        ourIds.push(user._id);
       }
     }
 
