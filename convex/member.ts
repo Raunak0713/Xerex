@@ -44,3 +44,26 @@ export const addMember = mutation({
     });
   }
 })
+
+export const getAllNotificationsOfMember = query({
+  args: {
+    userId: v.string(),
+  },
+  handler: async (ctx, args) => {
+    const convexMember = await ctx.db
+      .query("members")
+      .filter((q) => q.eq(q.field("developerUserId"), args.userId))
+      .first();
+
+    if (!convexMember) {
+      return []; 
+    }
+
+    const user = await ctx.db
+      .query("members")
+      .filter((q) => q.eq(q.field("_id"), convexMember._id))
+      .unique();
+
+    return user?.notifications || []; 
+  },
+});

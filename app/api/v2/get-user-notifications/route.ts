@@ -31,50 +31,32 @@ export async function OPTIONS(req: NextRequest) {
 export async function POST(req: NextRequest) {
   try {
     const origin = req.headers.get("origin");
-    const { recipients, content, buttonText, buttonUrl }: NotificationPayload = await req.json();
+    const { userID } = await req.json();
 
     // Validation
-    if (!recipients || !Array.isArray(recipients) || recipients.length === 0) {
-      return NextResponse.json({ error: "Invalid recipients array" }, { status: 400, headers: getCorsHeaders(origin) });
-    }
-    if (!content || typeof content !== "string") {
-      return NextResponse.json({ error: "Content is required and must be a string" }, { status: 400, headers: getCorsHeaders(origin) });
+    if (!userID || typeof userID !== "string") {
+      return NextResponse.json({ error: "Invalid User ID" }, { status: 400, headers: getCorsHeaders(origin) });
     }
 
-    const ourIds: Id<"members">[] = [];
+    // Fetch notifications
+    let notifications: Id<"notifications">[] = [];
+    const userNotifications = await convex.query(api.member.getAllNotificationsOfMember, { userId: userID });
 
-    // Convert developerUserId to Convex member IDs
-    for (const rec of recipients) {
-      let user = await convex.query(api.member.existingMember, { checkId: rec });
-
-      if (!user) {
-        await convex.mutation(api.member.addMember, { userId: rec });
-        user = await convex.query(api.member.existingMember, { checkId: rec });
-      }
-
-      if (user) {
-        ourIds.push(user._id);
-      }
+    if (userNotifications) {
+      notifications = userNotifications;
     }
-
-    const notificationId = await convex.mutation(api.notification.createNotification, {
-      content,
-      buttonText: buttonText || "",
-      buttonUrl: buttonUrl || "",
-      recipients: ourIds, 
-    });
 
     return NextResponse.json(
-      { message: "Notification created successfully", notificationId },
+      { message: "Fetched User Notifications successfully", notifications },
       { status: 200, headers: getCorsHeaders(origin) }
     );
   } catch (error) {
-    console.error("Error processing notification:", error);
+    console.error("Error fetching notifications:", error);
     return NextResponse.json({ error: "Failed to process request" }, { status: 500, headers: getCorsHeaders(null) });
   }
 }
 
 export async function GET(req: NextRequest) {
   const origin = req.headers.get("origin");
-  return NextResponse.json({ message: "Send Notification" }, { status: 200, headers: getCorsHeaders(origin) });
+  return NextResponse.json({ message: "Get All Notification" }, { status: 200, headers: getCorsHeaders(origin) });
 }
