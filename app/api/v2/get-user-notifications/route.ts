@@ -25,7 +25,7 @@ export async function OPTIONS(req: NextRequest) {
 export async function POST(req: NextRequest) {
   try {
     const origin = req.headers.get("origin");
-    const { userID } = await req.json();
+    const { userID } = await req.json(); // Read JSON body
 
     // Validation
     if (!userID || typeof userID !== "string") {
@@ -48,9 +48,4 @@ export async function POST(req: NextRequest) {
     console.error("Error fetching notifications:", error);
     return NextResponse.json({ error: "Failed to process request" }, { status: 500, headers: getCorsHeaders(null) });
   }
-}
-
-export async function GET(req: NextRequest) {
-  const origin = req.headers.get("origin");
-  return NextResponse.json({ message: "Get All Notification" }, { status: 200, headers: getCorsHeaders(origin) });
 }
