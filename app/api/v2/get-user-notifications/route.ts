@@ -3,12 +3,6 @@ import { Id } from "@/convex/_generated/dataModel";
 import { ConvexHttpClient } from "convex/browser";
 import { NextRequest, NextResponse } from "next/server";
 
-interface NotificationPayload {
-  recipients: string[];
-  content: string;
-  buttonText?: string;
-  buttonUrl?: string;
-}
 
 const convex = new ConvexHttpClient(process.env.NEXT_PUBLIC_CONVEX_URL!);
 
