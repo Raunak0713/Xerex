@@ -28,8 +28,19 @@ export const existingMember = query({
     const exist = await ctx.db
       .query("members")
       .filter((q) => q.eq(q.field("developerUserId"), args.checkId))
-      .first(); // Fetch first match
+      .unique()
 
-    return exist !== null; 
+    return exist
   },
 });
+
+export const addMember = mutation({
+  args : {
+    userId : v.string(),
+  },
+  handler : async(ctx, args) => {
+    await ctx.db.insert("members", {
+      developerUserId : args.userId
+    });
+  }
+})

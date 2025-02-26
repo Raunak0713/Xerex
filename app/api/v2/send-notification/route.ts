@@ -1,3 +1,6 @@
+import { api } from "@/convex/_generated/api";
+import { Id } from "@/convex/_generated/dataModel";
+import { ConvexHttpClient } from "convex/browser";
 import { NextRequest, NextResponse } from "next/server";
 
 interface NotificationPayload {
@@ -6,6 +9,7 @@ interface NotificationPayload {
   buttonText?: string;
   buttonUrl?: string;
 }
+const convex = new ConvexHttpClient(process.env.NEXT_PUBLIC_CONVEX_URL!);
 
 const allowedOrigins = ["http://localhost:3000", "https://xerex.100xbuild.com"];
 
@@ -41,7 +45,20 @@ export async function POST(req: NextRequest) {
     if (buttonText) notificationData.buttonText = buttonText;
     if (buttonUrl) notificationData.buttonUrl = buttonUrl;
 
-    console.log("Received Notification Data:", notificationData);
+    const ourIds = [];
+
+    for (const rec of recipients) {
+      let user = await convex.query(api.member.existingMember, { checkId: rec });
+      if (!user) {
+        const newUserId = await convex.mutation(api.member.addMember, { userId: rec });
+        user = await convex.query(api.member.existingMember, { checkId: rec });
+      }
+      if (user) {
+        ourIds.push(user.developerUserId);
+      }
+    }
+
+    console.log(ourIds)
 
     return NextResponse.json({ message: "Notification sent successfully", data: notificationData }, { status: 200, headers: getCorsHeaders(origin) });
   } catch (error) {
