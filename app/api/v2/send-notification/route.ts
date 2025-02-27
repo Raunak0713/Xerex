@@ -43,7 +43,6 @@ export async function POST(req: NextRequest) {
 
     const ourIds: Id<"members">[] = [];
 
-    // Convert developerUserId to Convex member IDs
     for (const rec of recipients) {
       let user = await convex.query(api.member.existingMember, { checkId: rec });
 
@@ -52,11 +51,11 @@ export async function POST(req: NextRequest) {
         user = await convex.query(api.member.existingMember, { checkId: rec });
       }
 
-      if (user) {
+      if (user && user._id) {
         ourIds.push(user._id);
       }
     }
-
+      
     const notificationId = await convex.mutation(api.notification.createNotification, {
       content,
       buttonText: buttonText || "",
