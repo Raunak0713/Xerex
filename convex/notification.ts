@@ -17,14 +17,15 @@ export const createNotification = mutation({
       recipients: args.recipients,
     });
 
-    for (const memberId of args.recipients) {
-      const member = await ctx.db.get(memberId);
-      const prevNotifications = member?.notifications || [];
-      const updatedNotifications = [...prevNotifications, notificationId];
-    
-      await ctx.db.patch(memberId, {
-        notifications: updatedNotifications,
-      });
+    // Update each recipient's notifications array
+    for (const userId of args.recipients) {
+      const user = await ctx.db.get(userId);
+      if (user) {
+        const currentNotifications = user.notifications || [];
+        await ctx.db.patch(userId, {
+          notifications: [...currentNotifications, notificationId],
+        });
+      }
     }
 
     return notificationId;
